@@ -44,13 +44,6 @@ v1Router.get("/healthz", handlerReadiness);
 
 app.use("/v1", v1Router);
 
-function insecureCheck(key: string) {
-  const data: any = { status: "active" };
-  // This triggers the 'security/detect-object-injection' warning
-  return data[key];
-}
-insecureCheck("status");
-
 app.listen(config.api.port, () => {
   console.log(`Server is running on port: ${config.api.port}`);
 });
