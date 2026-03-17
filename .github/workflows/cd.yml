@@ -23,3 +23,17 @@ jobs:
 
       - name: Build the application
         run: npm run build
+
+      # 1. Authenticate to Google Cloud using the secret we just created
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      # 2. Set up the gcloud CLI tool on the GitHub runner
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 3. Build the Docker image in the cloud and push to Artifact Registry
+      - name: Build and Push to Artifact Registry
+        run: gcloud builds submit --tag us-central1-docker.pkg.dev/helical-analyst-490423-s5/notely-ar-repo/notely:latest .
