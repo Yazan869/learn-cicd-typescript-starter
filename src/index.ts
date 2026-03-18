@@ -1,44 +1,37 @@
 import express from "express";
 import { db, assertDbConnection } from "./db/index.js";
-import { usersTable } from "./db/schema.js";
-import * as crypto from "crypto";
+import { users } from "./db/schema.js";
+import { randomUUID, randomBytes } from "crypto";
 
 const app = express();
 const port = process.env.PORT || "8080";
 
-assertDbConnection();
-
 app.use(express.json());
 app.use(express.static("dist/app"));
 
-// --- NOTELY ROUTES (With the /v1 prefix the frontend expects) ---
+app.get("/healthz", (req, res) => res.status(200).send("OK"));
 
-app.get("/healthz", (req, res) => {
-  res.status(200).send("OK");
-});
-
+// --- Notely Route ---
 app.post("/v1/users", async (req, res) => {
   try {
+    assertDbConnection();
     const { name } = req.body;
-    const id = crypto.randomUUID();
-    const apiKey = crypto.randomBytes(32).toString("hex");
-    const now = new Date().toISOString();
+    
+    const newUser = {
+      id: randomUUID(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      name: name || "Unknown",
+      apiKey: randomBytes(32).toString("hex"),
+    };
 
-    const [user] = await db.insert(usersTable).values({
-      id,
-      createdAt: now,
-      updatedAt: now,
-      name: name || "Unknown User",
-      apiKey: apiKey,
-    }).returning();
-
+    const [user] = await db.insert(users).values(newUser).returning();
     res.status(201).json(user);
-  } catch (err) {
-    console.error("DB Error:", err);
-    res.status(500).json({ error: "Couldn't create user" });
+  } catch (err: any) {
+    // This will print the REAL error to the browser so we can see it
+    console.error("DEBUG DB ERROR:", err.message);
+    res.status(500).json({ error: err.message || "Database Error" });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+app.listen(port, () => console.log(`Notely running on ${port}`));
