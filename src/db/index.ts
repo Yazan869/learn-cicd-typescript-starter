@@ -1,26 +1,11 @@
 import { drizzle } from "drizzle-orm/libsql";
-import { config } from "../config.js";
+import { createClient } from "@libsql/client";
 import * as schema from "./schema.js";
 
-let conn = undefined;
-
-if (config.db.url) {
-  conn = drizzle({
-    connection: {
-      url: config.db.url,
-    },
-    schema: schema,
-  });
-  console.log("Connected to database!");
-} else {
-  console.log("DATABASE_URL environment variable is not set");
-  console.log("Running without CRUD endpoints");
+const url = process.env.DATABASE_URL;
+if (!url) {
+    throw new Error("DATABASE_URL is not set");
 }
 
-export const db = conn;
-
-export function assertDbConnection() {
-  if (!db) {
-    throw new Error("Database connection is not available");
-  }
-}
+const client = createClient({ url: url });
+export const db = drizzle(client, { schema });

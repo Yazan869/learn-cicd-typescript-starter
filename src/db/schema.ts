@@ -1,30 +1,17 @@
-import { randomUUID } from "crypto";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { pgTable, text } from "drizzle-orm/pg-core";
 
-export const usersTable = sqliteTable("users", {
-  id: text("id", { length: 36 })
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
   name: text("name").notNull(),
-  apiKey: text("api_key").notNull().unique(),
+  apiKey: text("api_key").notNull(),
 });
 
-export type User = typeof usersTable.$inferSelect;
-export type NewUser = typeof usersTable.$inferInsert;
-
-export const notesTable = sqliteTable("notes", {
-  id: text("id", { length: 36 })
-    .primaryKey()
-    .$defaultFn(() => randomUUID()),
+export const notes = pgTable("notes", {
+  id: text("id").primaryKey(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
   note: text("note").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
 });
-
-export type Note = typeof notesTable.$inferSelect;
-export type NewNote = typeof notesTable.$inferInsert;
