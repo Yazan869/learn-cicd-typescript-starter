@@ -9,6 +9,10 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
 
+    # This makes the secret available to all steps in this job
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -34,6 +38,10 @@ jobs:
 
       - name: Build and Push to Artifact Registry
         run: gcloud builds submit --tag us-central1-docker.pkg.dev/helical-analyst-490423-s5/notely-ar-repo/notely:latest .
+
+      # NEW STEP: Run migrations after build but before deployment
+      - name: Run database migrations
+        run: npm run db:migrate
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy notely --image us-central1-docker.pkg.dev/helical-analyst-490423-s5/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project helical-analyst-490423-s5 --max-instances=4
