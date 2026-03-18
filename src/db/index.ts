@@ -10,7 +10,5 @@ export function assertDbConnection() {
   }
 }
 
-// Satisfy both my code and any other files
 const client = createClient({ url: url || "libsql://dummy-url" });
 export const db = drizzle(client, { schema });
-export const database = db;
