@@ -1,10 +1,13 @@
 import express from "express";
-import { db } from "./db/index.js";
-import { users } from "./db/schema.js";
+import { db, assertDbConnection } from "./db/index.js";
+import { usersTable } from "./db/schema.js";
 import * as crypto from "crypto";
 
 const app = express();
 const port = process.env.PORT || "8080";
+
+// Ensure DB is configured
+assertDbConnection();
 
 app.use(express.json());
 app.use(express.static("dist/app"));
@@ -20,7 +23,7 @@ app.post("/users", async (req, res) => {
     const apiKey = crypto.randomBytes(32).toString("hex");
     const now = new Date().toISOString();
 
-    const [user] = await db.insert(users).values({
+    const [user] = await db.insert(usersTable).values({
       id,
       createdAt: now,
       updatedAt: now,

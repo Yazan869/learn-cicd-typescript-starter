@@ -1,6 +1,6 @@
 import { pgTable, text } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
+export const usersTable = pgTable("users", {
   id: text("id").primaryKey(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
@@ -8,10 +8,16 @@ export const users = pgTable("users", {
   apiKey: text("api_key").notNull(),
 });
 
-export const notes = pgTable("notes", {
+export const notesTable = pgTable("notes", {
   id: text("id").primaryKey(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
   note: text("note").notNull(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
 });
+
+// These are the specific types the other files are looking for
+export type User = typeof usersTable.$inferSelect;
+export type NewUser = typeof usersTable.$inferInsert;
+export type Note = typeof notesTable.$inferSelect;
+export type NewNote = typeof notesTable.$inferInsert;
